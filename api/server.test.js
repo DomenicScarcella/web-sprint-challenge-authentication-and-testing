@@ -16,11 +16,14 @@ afterAll(async () => {
   await db.destroy();
 });
 
+const mockuser = { username: 'Frodo', password: 'Sam' };
+
 // Write your tests here
 test('sanity', () => {
   expect(false).toBe(false);
 });
 
+// api/jokes endpoint
 describe('[GET] jokes', () => {
   test('1. responds with 200 ok', async () => {
     const res = await request(server).get("/api/jokes");
@@ -33,4 +36,21 @@ describe('[GET] jokes', () => {
   });
 });
 
+// api/auth/register endpoint
+describe('Add user', () => {
+  test('3. adds user', async () => {
+    let res;
+    res = await (await request(server).post('/api/auth/register')).send(mockuser);
+    expect(res.body).toMatchObject({id: 1, ...mockuser});
+  });
+});
+
+// api/auth/login endpoint
+describe('Login user', () => {
+  test('4. logs in user', async () => {
+    let res;
+    res = await (await request(server).post('/api/auth/login')).send(mockuser);
+    expect(res.body).toMatchObject({id: 1, ...mockuser});
+  });
+});
 
