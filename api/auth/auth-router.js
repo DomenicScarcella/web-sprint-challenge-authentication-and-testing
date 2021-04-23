@@ -1,7 +1,50 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
+const db = require('../../data/dbConfig.js');
 
-router.post('/register', (req, res) => {
+// Middlewares here
+
+function findById(id) {
+  return db('users').where('id', id).first();
+}
+
+function findBy(filter) {
+  return db('users').where(filter);
+}
+
+function validateUser(req, res, next) {
+  if (!req.body.username || !req.body.username.trim() || !req.body.password || !req.body.password.trim()) {
+    next({ status: 401, message: 'username and password required' });
+  } else {
+    next();
+  }
+};
+
+async function uniqueUsername(req, res, next) {
+  try {
+    const users = await findBy({ username: req.body.username });
+    if (!users.length) {
+      next();
+    } else {
+      next({ status: 422, message: 'username taken' });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+async function addUser({ username, password }) {
+  let created_id;
+  await db.transaction(async trx => {
+    const [id] = await trx('users').insert({ username, password });
+    created_id = id;
+  });
+  return findById(created_id);
+}
+
+// Router functions here
+
+router.post('/register', validateUser, uniqueUsername, (req, res, next) => {
   res.end('implement register, please!');
   /*
     IMPLEMENT
@@ -28,6 +71,14 @@ router.post('/register', (req, res) => {
     4- On FAILED registration due to the `username` being taken,
       the response body should include a string exactly as follows: "username taken".
   */
+  const { username, password } = req.body;
+  const hash = bcrypt.hashSync(password, 8);
+
+  addUser({ username, password: hash })
+    .then(newUser => {
+      res.status(201).json(newUser);
+    })
+    .catch(next);
 });
 
 router.post('/login', (req, res) => {
