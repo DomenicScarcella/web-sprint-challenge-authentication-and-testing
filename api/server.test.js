@@ -2,9 +2,6 @@ const request = require("supertest");
 const db = require("../data/dbConfig.js");
 const server = require("./server.js");
 
-const frodo = { name: "Frodo" }
-const sam = { name: "Sam" }
-
 beforeAll(async () => {
   await db.migrate.rollback();
   await db.migrate.latest();
