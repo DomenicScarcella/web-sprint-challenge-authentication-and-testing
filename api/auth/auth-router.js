@@ -2,6 +2,7 @@ const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const db = require('../../data/dbConfig.js');
 const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require("../secrets");
 
 // Middlewares here
 
